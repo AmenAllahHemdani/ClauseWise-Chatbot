@@ -1,0 +1,20 @@
+2026-08-05 15:48:00,721 - app_logger - INFO - Parsing PDF document: employee.pdf
+2026-08-05 15:50:53,318 - app_logger - INFO - Parsing PDF document: employee.pdf
+2026-08-05 16:01:45,341 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-05 16:01:45,407 - app_logger - INFO - Chunking document: employment_agreement.pdf
+2026-08-05 16:01:45,409 - app_logger - DEBUG - Chunking by numbers: 147
+2026-08-05 16:02:41,287 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-05 16:02:41,346 - app_logger - INFO - Chunking document: employment_agreement.pdf
+2026-08-05 16:02:41,349 - app_logger - DEBUG - Chunking by numbers: 147
+2026-08-06 08:26:57,768 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-06 08:26:57,831 - app_logger - INFO - Chunking document: employment_agreement.pdf
+2026-08-06 08:26:57,833 - app_logger - DEBUG - Chunking by numbers: 147
+2026-08-06 09:19:13,984 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-06 09:19:14,308 - app_logger - INFO - Chunking document: employment_agreement.pdf
+2026-08-06 09:19:14,315 - app_logger - DEBUG - Chunking by numbers: 147
+2026-08-06 09:19:31,578 - app_logger - INFO - Parsing PDF document: OLDAPIWIND-DOWNLTD_01_08_2016-EX-1.3-AGENCY AGREEMENT1.pdf
+2026-08-06 09:19:31,707 - app_logger - INFO - Chunking document: OLDAPIWIND-DOWNLTD_01_08_2016-EX-1.3-AGENCY AGREEMENT1.pdf
+2026-08-06 09:19:31,710 - app_logger - DEBUG - Chunking by numbers: 279
+2026-08-06 09:20:27,219 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-06 09:20:27,281 - app_logger - INFO - Chunking document: employment_agreement.pdf
+2026-08-06 09:20:27,283 - app_logger - DEBUG - Chunking by numbers: 147

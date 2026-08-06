@@ -1,0 +1,6 @@
+2026-08-05 15:48:00,721 - app_logger - INFO - Parsing PDF document: employee.pdf
+2026-08-05 15:50:53,318 - app_logger - INFO - Parsing PDF document: employee.pdf
+2026-08-05 16:01:45,341 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-05 16:01:45,407 - app_logger - INFO - Chunking document: employment_agreement.pdf
+2026-08-05 16:02:41,287 - app_logger - INFO - Parsing PDF document: employment_agreement.pdf
+2026-08-05 16:02:41,346 - app_logger - INFO - Chunking document: employment_agreement.pdf

@@ -1,0 +1,26 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.8
+pydantic-settings>=2.4
+python-multipart>=0.0.9
+
+# parsing
+pymupdf>=1.24
+python-docx>=1.1
+
+# vector store + embeddings
+qdrant-client>=1.10
+sentence-transformers>=2.3.0
+langchain_text_splitters
+
+# LLM
+google-genai>=1.0
+
+# UI
+streamlit>=1.38
+requests>=2.32
+
+# dev
+pytest>=8.0
+httpx>=0.27
+
