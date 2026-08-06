@@ -9,3 +9,5 @@ qdrant_storage/
 data/uploads/
 *.egg-info/
 .DS_Store
+data/samples
+pdfs
