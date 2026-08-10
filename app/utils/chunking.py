@@ -8,12 +8,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def split_by_numbers(text: str) -> List[str]:
     """
-    Split the text by numbers.
+    Split the text by line-start clause numbers and lettered sub-clauses like (a).
     """
     if not text or not isinstance(text, str):
         return []
 
-    pattern = r'\n\d+(?:\.\d+)?(?:\s*-?\s*(?:\d+(?:\.\d+)?)?)?'
+    pattern = r'\n(?:\d+(?:\.\d+)?(?:\s*-?\s*(?:\d+(?:\.\d+)?)?)?|\([a-z]\))'
     chunks = re.split(pattern, text)
 
     return [c.strip() for c in chunks if c.strip()]

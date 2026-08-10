@@ -20,7 +20,22 @@ def _client():
     return genai.Client(api_key=settings.google_api_key)
 
 
+NOT_FOUND_ANSWER = "Not found in the document."
+
+
 def answer_question(question: str, citations: list[Citation]) -> str:
-    # TODO(epic-1): build the excerpts block from citations and call
-    # _client().models.generate_content(model=settings.llm_model, ...).
-    raise NotImplementedError
+    from google.genai import types
+
+    excerpts = "\n\n".join(
+        f"[{i}] (clause {citation.section or 'unknown'}) {citation.text}"
+        for i, citation in enumerate(citations, 1)
+    )
+    response = _client().models.generate_content(
+        model=settings.llm_model,
+        contents=f"Contract excerpts:\n\n{excerpts}\n\nQuestion: {question}",
+        config=types.GenerateContentConfig(
+            system_instruction=GROUNDED_QA_SYSTEM_PROMPT,
+            temperature=0,
+        ),
+    )
+    return (response.text or NOT_FOUND_ANSWER).strip()

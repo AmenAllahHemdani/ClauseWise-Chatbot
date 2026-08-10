@@ -14,7 +14,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from app.core.chunking import chunk_document, chunk_pages
+from app.core.chunking import chunk_document, chunk_pages, chunk_rules
 from app.core.parsing import parse_document
 
 
@@ -36,15 +36,17 @@ def main() -> None:
     parsed = parse_document(args.path.read_bytes(), args.path.name)
     chunks = chunk_document(parsed)
     pages_per_chunk = chunk_pages(parsed, chunks)
+    rules_per_chunk = chunk_rules(parsed, chunks)
 
-    for i, (chunk, pages) in enumerate(zip(chunks, pages_per_chunk)):
+    for i, (chunk, pages, rule) in enumerate(zip(chunks, pages_per_chunk, rules_per_chunk)):
         page_label = "p.?" if pages is None else f"p.{pages}"
+        rule_label = "rule -" if rule is None else f"rule {rule}"
         if args.full:
-            print(f"--- chunk {i} ({page_label}, {len(chunk)} chars) ---")
+            print(f"--- chunk {i} ({page_label}, {rule_label}, {len(chunk)} chars) ---")
             print(chunk)
         else:
             preview = " ".join(chunk.split())
-            print(f"[{i:3}] {page_label:12} ({len(chunk):5} chars) {preview[:100]}")
+            print(f"[{i:3}] {page_label:12} {rule_label:10} ({len(chunk):5} chars) {preview[:90]}")
 
     print(f"\n{len(chunks)} chunks from {args.path.name}")
 

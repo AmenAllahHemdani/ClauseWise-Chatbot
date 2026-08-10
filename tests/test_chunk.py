@@ -81,6 +81,48 @@ def test_chunk_pages_repeated_fragment_resolves_in_order():
     assert chunk_pages(doc, ["clause,", "clause,"]) == [1, 2]
 
 
+def test_chunk_rules_numbers_and_sections():
+    from app.core.chunking import chunk_rules
+    from app.core.parsing import ParsedBlock, ParsedDocument
+    from app.utils.chunking import split_by_numbers, split_by_section
+
+    numbered = "Preamble here.\n1.1 First rule text.\n1.2 Second rule text.\n2 Third rule text."
+    doc = ParsedDocument(filename="x.pdf", text=numbered, blocks=[ParsedBlock(text=numbered, page=1)])
+    chunks = split_by_numbers(numbered)
+    assert chunk_rules(doc, chunks) == [None, "1.1", "1.2", "2"]
+
+    sectioned = "Preamble here.\nSection 1 covers scope.\nSection 12 covers payment."
+    doc = ParsedDocument(filename="x.pdf", text=sectioned, blocks=[ParsedBlock(text=sectioned, page=1)])
+    chunks = split_by_section(sectioned)
+    assert chunk_rules(doc, chunks) == [None, "1", "12"]
+
+
+def test_chunk_rules_lettered_subclauses():
+    from app.core.chunking import chunk_rules
+    from app.core.parsing import ParsedBlock, ParsedDocument
+    from app.utils.chunking import split_by_numbers
+
+    text = (
+        "Preamble.\n"
+        "1 Duties are the following.\n"
+        "(a) First duty text.\n"
+        "(b) Second duty text.\n"
+        "2 Compensation follows.\n"
+        "(a) Base salary text."
+    )
+    doc = ParsedDocument(filename="x.pdf", text=text, blocks=[ParsedBlock(text=text, page=1)])
+    chunks = split_by_numbers(text)
+    assert chunks == [
+        "Preamble.",
+        "Duties are the following.",
+        "First duty text.",
+        "Second duty text.",
+        "Compensation follows.",
+        "Base salary text.",
+    ]
+    assert chunk_rules(doc, chunks) == [None, "1", "1 (a)", "1 (b)", "2", "2 (a)"]
+
+
 def test_chunk_sample_pdf():
     pytest.importorskip("fitz", reason="pymupdf not installed")
     from app.core.chunking import chunk_document

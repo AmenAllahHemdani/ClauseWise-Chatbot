@@ -1,10 +1,11 @@
+import re
+
 from app.core.parsing import ParsedDocument
 from app.logging import logger
 from app.utils.chunking import find_section_count, find_numbers_count, split_by_section, split_by_numbers, split_text
 
 
 def chunk_document(document: ParsedDocument) -> list[str]:
-    # merge tiny fragments, split oversized clauses with overlap, and carry section labels.
     logger.info(f"Chunking document: {document.filename}")
 
     section_count = find_section_count(document.text)
@@ -21,15 +22,30 @@ def chunk_document(document: ParsedDocument) -> list[str]:
         return split_text(document.text)
 
 
-def chunk_pages(document: ParsedDocument, chunks: list[str]) -> list[int | list[int] | None]:
-    """Map each chunk back to the page(s) its text came from.
-
-    document.text is the concatenation of the per-page block texts, and every
-    chunk is a contiguous substring of it, so a chunk's character span can be
-    intersected with the page spans. Returns, per chunk: a single page number,
-    a list of page numbers when the chunk straddles pages, or None when the
-    chunk can't be located (e.g. DOCX documents have no page blocks).
+def chunk_spans(document: ParsedDocument, chunks: list[str]) -> list[tuple[int, int] | None]:
     """
+    Locate each chunk's (start, end) character span in document.text.
+    """
+
+    spans: list[tuple[int, int] | None] = []
+    cursor = 0
+    for chunk in chunks:
+        start = document.text.find(chunk, cursor)
+        if start == -1:
+            start = document.text.find(chunk)
+        if start == -1:
+            spans.append(None)
+            continue
+        cursor = start + 1
+        spans.append((start, start + len(chunk)))
+    return spans
+
+
+def chunk_pages(document: ParsedDocument, chunks: list[str]) -> list[int | list[int] | None]:
+    """
+    Map each chunk back to the page(s) its text came from.
+    """
+
     page_spans = []
     offset = 0
     for block in document.blocks:
@@ -37,18 +53,11 @@ def chunk_pages(document: ParsedDocument, chunks: list[str]) -> list[int | list[
         offset += len(block.text)
 
     pages_per_chunk: list[int | list[int] | None] = []
-    # chunks come in document order, so advance a search cursor to resolve
-    # repeated fragments to the right occurrence
-    cursor = 0
-    for chunk in chunks:
-        start = document.text.find(chunk, cursor)
-        if start == -1:
-            start = document.text.find(chunk)
-        if start == -1:
+    for span in chunk_spans(document, chunks):
+        if span is None:
             pages_per_chunk.append(None)
             continue
-        cursor = start + 1
-        end = start + len(chunk)
+        start, end = span
         pages = [
             page
             for span_start, span_end, page in page_spans
@@ -61,3 +70,52 @@ def chunk_pages(document: ParsedDocument, chunks: list[str]) -> list[int | list[
         else:
             pages_per_chunk.append(pages)
     return pages_per_chunk
+
+
+# "7" / "1.1" / "5.2 - 5.4"
+_RULE_BEFORE_CHUNK = re.compile(
+    r"(?i)(?:\bsection\s+(?P<section>\d+)|\n\n(?P<number>\d+(?:\.\d+)?(?:\s*-\s*\d+(?:\.\d+)?)?))\s*$"
+)
+# a lettered sub-clause marker like "(a)" right before a chunk
+_LETTER_BEFORE_CHUNK = re.compile(r"\(([a-z])\)\s*$")
+
+_PARENT_MARKERS = re.compile(
+    r"(?i)\bsection\s+(?P<section>\d+)|\n\n(?P<number>\d+(?:\.\d+)?(?:\s*-\s*\d+(?:\.\d+)?)?)"
+)
+
+
+def chunk_rules(document: ParsedDocument, chunks: list[str]) -> list[str | None]:
+    """
+    Recover the rule/clause number each chunk was split on.
+    """
+
+    parent_markers = [
+        (match.start(), re.sub(r"\s+", "", match.group("section") or match.group("number")))
+        for match in _PARENT_MARKERS.finditer(document.text)
+    ]
+
+    rules: list[str | None] = []
+    for span in chunk_spans(document, chunks):
+        if span is None:
+            rules.append(None)
+            continue
+        start, _ = span
+        window = document.text[max(0, start - 40):start]
+
+        match = _RULE_BEFORE_CHUNK.search(window)
+        if match is not None:
+            rules.append(re.sub(r"\s+", "", match.group("section") or match.group("number")))
+            continue
+
+        letter = _LETTER_BEFORE_CHUNK.search(window)
+        if letter is None:
+            rules.append(None)
+            continue
+        parent = None
+        for position, label in parent_markers:
+            if position < start:
+                parent = label
+            else:
+                break
+        rules.append(f"{parent} ({letter.group(1)})" if parent else f"({letter.group(1)})")
+    return rules

@@ -19,6 +19,7 @@ class ContractChunk(BaseModel):
     content: str
     contract_id: str
     page_number: Optional[Union[int, List[int]]] = None
+    rule_number: Optional[str] = None
     section_title: Optional[str] = "General"
     chunk_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -35,13 +36,11 @@ class VectorStore:
     ):
         self.collection_name = collection_name
         
-        # 1. Initialize open-source embedding model
         self.embedding_model = SentenceTransformer(model_name)
         self.embedding_dim = self.embedding_model.get_sentence_embedding_dimension()
         
         self.is_bge_model = "bge" in model_name.lower()
 
-        # 2. Initialize Qdrant Client
         if location.startswith("http://") or location.startswith("https://"):
             self.client = QdrantClient(url=location, api_key=api_key)
         elif location == ":memory:":
@@ -49,7 +48,6 @@ class VectorStore:
         else:
             self.client = QdrantClient(path=location)
 
-        # 3. Create collection and payload indexes
         self._ensure_collection_exists()
 
     def _ensure_collection_exists(self) -> None:
@@ -105,6 +103,7 @@ class VectorStore:
                 "content": chunk.content,
                 "contract_id": chunk.contract_id,
                 "page_number": chunk.page_number,
+                "rule_number": chunk.rule_number,
                 "section_title": chunk.section_title,
             }
             if extra_payload:
@@ -148,6 +147,7 @@ class VectorStore:
                         "content": chunk.content,
                         "contract_id": chunk.contract_id,
                         "page_number": chunk.page_number,
+                        "rule_number": chunk.rule_number,
                         "section_title": chunk.section_title,
                     },
                 )
@@ -195,10 +195,12 @@ class VectorStore:
         for hit in search_results:
             formatted_hits.append(
                 {
+                    "chunk_id": str(hit.id),
                     "score": round(hit.score, 4),
                     "content": hit.payload.get("content"),
                     "contract_id": hit.payload.get("contract_id"),
                     "page_number": hit.payload.get("page_number"),
+                    "rule_number": hit.payload.get("rule_number"),
                     "section_title": hit.payload.get("section_title"),
                     "payload": hit.payload,  # Returns full payload including extra metadata
                 }

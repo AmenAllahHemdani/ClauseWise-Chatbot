@@ -1,6 +1,6 @@
 from app.config import settings
 from app.core.parsing import parse_document
-from app.core.chunking import chunk_document, chunk_pages
+from app.core.chunking import chunk_document, chunk_pages, chunk_rules
 from app.core.embeddings import embed_chunks
 from app.logging import logger
 from app.core.vector_store import ContractChunk, VectorStore
@@ -11,9 +11,10 @@ def pipeline_document(contents: bytes, filename: str, contract_id: str, collecti
     embeddings = embed_chunks(chunks)
 
     pages_per_chunk = chunk_pages(parsed_document, chunks)
+    rules_per_chunk = chunk_rules(parsed_document, chunks)
     contract_chunks = [
-        ContractChunk(content=chunk, contract_id=contract_id, page_number=pages)
-        for chunk, pages in zip(chunks, pages_per_chunk)
+        ContractChunk(content=chunk, contract_id=contract_id, page_number=pages, rule_number=rule)
+        for chunk, pages, rule in zip(chunks, pages_per_chunk, rules_per_chunk)
     ]
 
     vector_store = VectorStore(
