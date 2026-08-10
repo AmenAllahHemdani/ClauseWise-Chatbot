@@ -41,6 +41,17 @@ class ChatResponse(BaseModel):
     found_in_document: bool
 
 
+class HistoryEntry(BaseModel):
+    id: str
+    document_id: str
+    question: str
+    answer: str
+    found_in_document: bool
+    citations: list[Citation] = []
+    pages: list[PageRef] = []
+    created_at: str
+
+
 class RiskSeverity(str, Enum):
     low = "low"
     medium = "medium"

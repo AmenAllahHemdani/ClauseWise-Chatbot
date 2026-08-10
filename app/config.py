@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     qdrant_collection: str = "clausewise_chunks"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
 
+    mongo_url: str = ""
+    mongo_db: str = "clausewise"
+
     mode: str = "dev"
     api_host: str = "0.0.0.0"
     api_port: int = 8000

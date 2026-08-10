@@ -13,6 +13,9 @@ qdrant-client>=1.10
 sentence-transformers>=2.3.0
 langchain_text_splitters
 
+# chat history
+pymongo>=4.17
+
 # LLM
 google-genai>=1.0
 
