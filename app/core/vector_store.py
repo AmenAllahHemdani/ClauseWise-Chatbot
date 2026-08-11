@@ -159,6 +159,38 @@ class VectorStore:
         )
         return len(points)
 
+    def get_contract_chunks(self, contract_id: str) -> List[Dict[str, Any]]:
+        """All stored chunk payloads for one contract, ordered by page."""
+        payloads = []
+        offset = None
+        while True:
+            points, offset = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=Filter(
+                    must=[
+                        FieldCondition(
+                            key="contract_id",
+                            match=MatchValue(value=contract_id),
+                        )
+                    ]
+                ),
+                limit=256,
+                offset=offset,
+                with_payload=True,
+            )
+            payloads.extend(point.payload for point in points)
+            if offset is None:
+                break
+
+        def first_page(payload: Dict[str, Any]) -> int:
+            page = payload.get("page_number")
+            if isinstance(page, list) and page:
+                return page[0]
+            return page if isinstance(page, int) else 0
+
+        payloads.sort(key=first_page)
+        return payloads
+
     def search_contract(
         self,
         query: str,

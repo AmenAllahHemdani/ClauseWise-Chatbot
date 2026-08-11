@@ -16,6 +16,15 @@ def _store(collection: str) -> VectorStore:
     )
 
 
+def get_document_chunks(
+    document_id: str,
+    collection: str | None = None,
+) -> list[dict]:
+    """All indexed chunk payloads for a document, ordered by page."""
+    store = _store(collection or settings.qdrant_collection)
+    return store.get_contract_chunks(document_id)
+
+
 def search(
     document_id: str,
     query: str,
